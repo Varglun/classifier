@@ -6,6 +6,12 @@ canvas.height = 576;
 let x_center = canvas.width / 2;
 let y_center = canvas.height / 2;
 
+
+let green_coord_x = [];
+let green_coord_y = [];
+let red_coord_x = [];
+let red_coord_y = [];
+
 function gen_theta() {
     let alpha = Math.random()*2*Math.PI;
     console.log(`alpha = ${alpha}`);
@@ -31,12 +37,15 @@ function gen_line() {
     return [x0, y0, x1, y1];
 
 } 
+
+
+
 let theta = gen_theta();
 let theta0 = gen_theta0();
 let line_coords = gen_line();
 
 c.beginPath();
-c.rect(0, 0, canvas.width, canvas.height);
+// c.rect(0, 0, canvas.width, canvas.height);
 let line_coord_0_x = line_coords[0];
 let line_coord_0_y = line_coords[1];
 let line_coord_1_x = line_coords[2];
@@ -53,21 +62,114 @@ function dotproduct(vec1, vec2) {
     return ans;
 }
 
+let draw_line = false;
+let button_dl = document.querySelector("#draw_line");
+let check_dl = false;
+button_dl.addEventListener("click", function() {
+    draw_line = true;
+})
 
-window.addEventListener("click", function(event) {
+let line_start_x = 0;
+let line_start_y = 0;
+let line_finish_x = 0;
+let line_finish_y = 0;
+
+let mouse_x;
+let mouse_y;
+
+canvas.addEventListener("mousemove", function(event) {
+    mouse_x = event.offsetX;
+    mouse_y = event.offsetY;
+    // c.beginPath();
+    // c.moveTo(line_start_x, line_start_y);
+    // c.lineTo(event.offsetX, event.offsetY);
+    // c.fillStyle = 'black';
+    // c.fillRect(event.offsetX, event.offsetY, 10, 10);
+    // c.stroke();
+})
+
+
+canvas.addEventListener("click", function(event) {
     // console.log(event)
-    if (dotproduct(theta, [event.offsetX - x_center, event.offsetY - y_center]) + theta0 >= 0) {
+    if (draw_line == false) {
+        console.log("Draw a point");
+        if (dotproduct(theta, [event.offsetX - x_center, event.offsetY - y_center]) + theta0 >= 0) {
+            green_coord_x.push(event.offsetX);
+            green_coord_y.push(event.offsetY);
+            // c.beginPath();
+            // c.arc(event.offsetX, event.offsetY, 5, 0 , 2*Math.PI);
+            // c.fillStyle = "green";
+            // c.fill();
+            // c.stroke();
+        } else {
+            red_coord_x.push(event.offsetX);
+            red_coord_y.push(event.offsetY);            
+            // c.beginPath();
+            // c.arc(event.offsetX, event.offsetY, 5, 0 , 2*Math.PI);
+            // c.fillStyle = "red";
+            // c.fill();
+            // c.stroke();        
+        }
+    } else { 
+        // c.moveTo(line_start_x, line_start_y);      
+        if (check_dl == false) {
+            check_dl = true;   
+            line_start_x = event.offsetX;
+            line_start_y = event.offsetY;            
+        } else {
+            check_dl = false;   
+            line_finish_x = event.offsetX;
+            line_finish_y = event.offsetY;
+            
+        }
+        
+  
+    }
+
+    
+});
+
+function animate() {
+    window.requestAnimationFrame(animate);
+    c.fillStyle = 'white';
+    c.fillRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < green_coord_x.length; i++) {
         c.beginPath();
-        c.arc(event.offsetX, event.offsetY, 5, 0 , 2*Math.PI);
+        c.arc(green_coord_x[i], green_coord_y[i], 5, 0 , 2*Math.PI);
         c.fillStyle = "green";
         c.fill();
         c.stroke();
-    } else {
+    }
+    for (let i = 0; i < red_coord_x.length; i++) {
         c.beginPath();
-        c.arc(event.offsetX, event.offsetY, 5, 0 , 2*Math.PI);
+        c.arc(red_coord_x[i], red_coord_y[i], 5, 0 , 2*Math.PI);
         c.fillStyle = "red";
         c.fill();
-        c.stroke();        
+        c.stroke();
+    }   
+    if (check_dl == true) {        
+        console.log("drawing a line");
+        c.beginPath();
+        c.moveTo(line_start_x, line_start_y);
+        c.lineTo(mouse_x, mouse_y);
+        c.stroke();
     }
-    
-});
+    if (draw_line == true) {
+        c.beginPath();
+        c.arc(line_start_x, line_start_y, 5, 0 , 2*Math.PI);
+        c.fillStyle = "black";
+        c.fill();
+        c.stroke();  
+        if (check_dl == false) {
+            c.beginPath();
+            c.arc(line_finish_x, line_finish_y, 5, 0 , 2*Math.PI);
+            c.fillStyle = "black";
+            c.fill();
+            c.moveTo(line_start_x, line_start_y);
+            c.lineTo(line_finish_x, line_finish_y);
+            c.stroke();            
+        }
+    }
+}
+
+animate();
