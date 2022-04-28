@@ -6,6 +6,8 @@ canvas.height = 576;
 let x_center = canvas.width / 2;
 let y_center = canvas.height / 2;
 
+const coef_ans = 0.95;
+let trials = 0;
 
 let green_coord_x = [];
 let green_coord_y = [];
@@ -64,6 +66,7 @@ function dotproduct(vec1, vec2) {
 
 let draw_line = false;
 let button_dl = document.querySelector("#draw_line");
+let button_sl = document.querySelector("#submit_line");
 let check_dl = false;
 button_dl.addEventListener("click", function() {
     draw_line = true;
@@ -92,6 +95,7 @@ canvas.addEventListener("mousemove", function(event) {
 canvas.addEventListener("click", function(event) {
     // console.log(event)
     if (draw_line == false) {
+        trials += 1;
         console.log("Draw a point");
         if (dotproduct(theta, [event.offsetX - x_center, event.offsetY - y_center]) + theta0 >= 0) {
             green_coord_x.push(event.offsetX);
@@ -128,6 +132,8 @@ canvas.addEventListener("click", function(event) {
 
     
 });
+
+let show_points = false;
 
 function animate() {
     window.requestAnimationFrame(animate);
@@ -167,9 +173,56 @@ function animate() {
             c.fill();
             c.moveTo(line_start_x, line_start_y);
             c.lineTo(line_finish_x, line_finish_y);
-            c.stroke();            
+            c.stroke();
         }
     }
 }
 
 animate();
+
+
+function intersection(vec1, a1, vec2, a2) {
+    let x = (vec2[1]*a1/vec1[1] - a2)/(vec2[0] - vec2[1]*vec1[0]/vec1[1]);
+    let y = -(a1 + vec1[0]*x)/vec1[1];
+    return [x, y];
+}
+
+function line_to_vec(x1, y1, x2, y2) {
+    let th0 = 1;
+    let vec = intersection([x1, y1], th0, [x2, y2], th0);
+    let thx = vec[0];
+    let thy = vec[1];
+    let th_abs = Math.sqrt(Math.pow(thx, 2) + Math.pow(thy, 2));
+    thx = thx / th_abs;
+    thy = thy / th_abs;
+    th0 = th0 / th_abs;
+    return [thx, thy, th0];
+}
+
+function find_wrong_area (vec1, a1, vec2, a2) {
+    let direct = dotproduct(vec1, vec2) >= 0;
+    let ans = 0;
+    for (let i = 0; i < 1000000; i++) {
+        let rand_x = canvas.width * (Math.random() - 0.5);
+        let rand_y = canvas.height * (Math.random() - 0.5);
+        if (direct) {
+            if ((dotproduct(vec1, [rand_x, rand_y]) + a1) * (dotproduct(vec2, [rand_x, rand_y]) + a2) < 0) {
+                ans += 1;
+            }
+        } else {
+            if ((dotproduct(vec1, [rand_x, rand_y]) + a1) * (dotproduct(vec2, [rand_x, rand_y]) + a2) > 0) {
+                ans += 1;
+            }
+        }
+    }
+    ans = ans / 1000000;
+    return ans;
+}
+
+let points = document.querySelector("#points");
+
+button_sl.addEventListener("click", function() {
+    let vec_ans = line_to_vec(line_start_x - x_center, line_start_y - y_center, line_finish_x - x_center, line_finish_y - y_center);
+    let ans = 1 - find_wrong_area([vec_ans[0], vec_ans[1]], vec_ans[2], theta, theta0);
+    points.innerHTML = "Your rating: " + (ans * Math.pow(coef_ans, trials)).toFixed(2);
+})

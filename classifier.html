@@ -9,12 +9,21 @@
         canvas {
             border: 2px solid blue;
         }
+
+        #draw_line:hover {
+            color: blueviolet;
+        }
+        #submit_line:hover {
+            color: blueviolet;
+        }
     </style>
     
 </head>
 <body>
-    <input type="button" value="Draw Line" id="draw_line">
+    <input type="button" value="Draw Line" id="draw_line" style="width: 100px; height: 30px; font-size: 0.5cm;">
+    <input type="button" value="Submit Line" id="submit_line" style="width: 150px; height: 30px; font-size: 0.5cm;">
     <canvas></canvas>
+    <p id="points" style="font-size: 2cm;"></p>
     <script src="classifier.js"></script>
 </body>
 </html>
