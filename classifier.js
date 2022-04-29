@@ -47,7 +47,6 @@ let theta0 = gen_theta0();
 let line_coords = gen_line();
 
 c.beginPath();
-// c.rect(0, 0, canvas.width, canvas.height);
 let line_coord_0_x = line_coords[0];
 let line_coord_0_y = line_coords[1];
 let line_coord_1_x = line_coords[2];
@@ -83,39 +82,21 @@ let mouse_y;
 canvas.addEventListener("mousemove", function(event) {
     mouse_x = event.offsetX;
     mouse_y = event.offsetY;
-    // c.beginPath();
-    // c.moveTo(line_start_x, line_start_y);
-    // c.lineTo(event.offsetX, event.offsetY);
-    // c.fillStyle = 'black';
-    // c.fillRect(event.offsetX, event.offsetY, 10, 10);
-    // c.stroke();
 })
 
 
 canvas.addEventListener("click", function(event) {
-    // console.log(event)
     if (draw_line == false) {
         trials += 1;
         console.log("Draw a point");
         if (dotproduct(theta, [event.offsetX - x_center, event.offsetY - y_center]) + theta0 >= 0) {
             green_coord_x.push(event.offsetX);
             green_coord_y.push(event.offsetY);
-            // c.beginPath();
-            // c.arc(event.offsetX, event.offsetY, 5, 0 , 2*Math.PI);
-            // c.fillStyle = "green";
-            // c.fill();
-            // c.stroke();
         } else {
             red_coord_x.push(event.offsetX);
-            red_coord_y.push(event.offsetY);            
-            // c.beginPath();
-            // c.arc(event.offsetX, event.offsetY, 5, 0 , 2*Math.PI);
-            // c.fillStyle = "red";
-            // c.fill();
-            // c.stroke();        
+            red_coord_y.push(event.offsetY);   
         }
-    } else { 
-        // c.moveTo(line_start_x, line_start_y);      
+    } else {  
         if (check_dl == false) {
             check_dl = true;   
             line_start_x = event.offsetX;
@@ -224,5 +205,5 @@ let points = document.querySelector("#points");
 button_sl.addEventListener("click", function() {
     let vec_ans = line_to_vec(line_start_x - x_center, line_start_y - y_center, line_finish_x - x_center, line_finish_y - y_center);
     let ans = 1 - find_wrong_area([vec_ans[0], vec_ans[1]], vec_ans[2], theta, theta0);
-    points.innerHTML = "Your rating: " + (ans * Math.pow(coef_ans, trials)).toFixed(2);
+    points.innerHTML = "Your score: " + (ans * Math.pow(coef_ans, trials)).toFixed(2);
 })
