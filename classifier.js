@@ -46,14 +46,14 @@ let theta = gen_theta();
 let theta0 = gen_theta0();
 let line_coords = gen_line();
 
-c.beginPath();
-let line_coord_0_x = line_coords[0];
-let line_coord_0_y = line_coords[1];
-let line_coord_1_x = line_coords[2];
-let line_coord_1_y = line_coords[3];
-c.moveTo(line_coord_0_x, line_coord_0_y);
-c.lineTo(line_coord_1_x, line_coord_1_y);
-c.stroke();
+// c.beginPath();
+// let line_coord_0_x = line_coords[0];
+// let line_coord_0_y = line_coords[1];
+// let line_coord_1_x = line_coords[2];
+// let line_coord_1_y = line_coords[3];
+// c.moveTo(line_coord_0_x, line_coord_0_y);
+// c.lineTo(line_coord_1_x, line_coord_1_y);
+// c.stroke();
 
 function dotproduct(vec1, vec2) {
     let ans = 0;
