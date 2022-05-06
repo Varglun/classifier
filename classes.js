@@ -1,34 +1,37 @@
 class Dot {
     constructor(coords, radius = dot_radius, color) {
-        this._x = coords[0];
-        this._y = coords[1];
-        this.radius = radius;
-        this.color = color;
+        this._coords = coords;
+        this._radius = radius;
+        this._color = color;
     }
 
-    draw(shift_x = 0, shift_y = 0) {
-        c.beginPath();
-        c.arc(this.x + shift_x, this.y + shift_y, this.radius, 0 , 2*Math.PI);
-        c.fillStyle = this.color;
-        c.fill();
-        c.stroke();        
+    // draw(shift_x = 0, shift_y = 0) {
+    //     c.beginPath();
+    //     c.arc(this.x + shift_x, this.y + shift_y, this.radius, 0 , 2*Math.PI);
+    //     c.fillStyle = this.color;
+    //     c.fill();
+    //     c.stroke();        
+    // }
+
+    // check_correct(theta, theta0) {
+    //     if (dotproduct([this.x, this.y], theta) + theta0 > 0) {
+    //         return 0;
+    //     } else {
+    //         return 1;
+    //     }
+
+    // } 
+
+    get coords() {
+        return this._coords;
     }
 
-    check_correct(theta, theta0) {
-        if (dotproduct([this.x, this.y], theta) + theta0 > 0) {
-            return 0;
-        } else {
-            return 1;
-        }
-
-    } 
-
-    get x() {
-        return this._x;
+    get radius() {
+        return this._radius;
     }
-    
-    get y() {
-        return this._y;
+
+    get color() {
+        return this._color;
     }
 }
 
@@ -72,9 +75,9 @@ class Dynamic_Line {
 
 
 class Classifier {
-    constructor(center_x, center_y, width, height) {
-        this.center_x = center_x;
-        this.center_y = center_y;
+    constructor(width, height) {
+        this.center_x = width / 2;
+        this.center_y = height / 2;
         this.width = width;
         this.height = height;
         this.trials = 0;
@@ -256,3 +259,169 @@ class Classifier {
 }
 
 
+class LinearClassifier {
+    constructor(th = new Vector(new Coord()), th0=0) {
+        this.th = th;
+        this.th0 = th0;
+    }
+    
+    rand_initialize(max_th0) {
+        let alpha = Math.random()*2*Math.PI;
+        this.th = new Vector(new Coord(Math.cos(alpha), Math.sin(alpha)));
+        let theta0_sign = Math.floor(Math.random()*2)*2 - 1;
+        let theta0_abs = Math.random() * max_th0;
+        this.th0 = theta0_sign * theta0_abs;
+    }
+
+    coord_initialize(coords_start, coords_end) {
+        let vec1 = new Vector(coords_end, coords_start);
+        vec1.clockwise_rotate_90();
+        vec1.normalize();
+        this.th0 = - vec1.dot(new Vector(coords_start));
+        this.th = vec1;
+    }
+
+    displace(coords_center) {
+        this.th0 = this.th0 - this.th.dot(new Vector(coords_center));
+    }
+
+    check_coord(coord) {
+        if (this.th.dot(new Vector(coord)) + this.th0 >= 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    get_draw_lines(length) {
+        let a = new Vector(this.th.get_coords());
+        a.clockwise_rotate_90();
+        let b = this.th.num_mult(-1*this.th0);
+        a = a.add(b);
+        a.num_mult(length);
+        let coord1 = a.get_coords();
+        a.clockwise_rotate_90();
+        a.clockwise_rotate_90();
+        let coord2 = a.get_coords();
+        
+        let ans = {
+            "Separator": new Line(coord1, coord2, 'black'),
+            "Direction": new Line()
+        }
+        return [];
+    }
+    
+}
+
+class Coord {
+    constructor(x=0, y=0) {
+        this._x = x;
+        this._y = y;
+    }
+
+    get x() {
+        return this._x;
+    }
+
+    get y() {
+        return this._y;
+    }
+
+}
+
+class Vector {
+    constructor(coords_end, coords_start = new Coord()) {
+        this.x = coords_end.x - coords_start.x;
+        this.y = coords_end.y - coords_start.y;
+    }
+
+    add(vector) {
+        let x_coord = this.x + vector.x;
+        let y_coord = this.y + vector.y;
+        let coords_end = new Coord(x_coord, y_coord);
+        return new Vector(coords_end);
+    }
+
+    subtract(vector) {
+        let x_coord = this.x - vector.x;
+        let y_coord = this.y - vector.y;
+        let coords_end = new Coord(x_coord, y_coord);
+        return new Vector(coords_end);
+    }
+
+    dot(vector) {
+        return this.x*vector.x + this.y*vector.y;
+    }
+
+    length() {
+        return Math.sqrt(this.dot(this));
+    }
+
+    normalize() {
+        let x = this.x / this.length();
+        let y = this.y / this.length();
+        this.x = x;
+        this.y = y;
+    }
+
+    clockwise_rotate_90() {
+        let x = this.dot(new Vector(new Coord(0, 1)));
+        let y = this.dot(new Vector(new Coord(-1, 0)));
+        this.x = x;
+        this.y = y;
+    }
+
+    get_coords() {
+        return new Coord(this.x, this.y);
+    }
+
+    num_mult(num) {
+        this.x = this.x*num;
+        this.y = this.y*num;
+    }
+}
+
+class Drawer {
+    constructor(canvas, width, height) {
+        this.canvas = canvas;
+        this.canvas.width = width;
+        this.canvas.height = height;
+        this.ctx = this.canvas.getContext('2d');
+    }
+
+    draw_line(coord1, coord2, color) {
+        this.ctx.beginPath(); 
+        this.ctx.strokeStyle = color;
+        this.ctx.moveTo(coord1.x, coord1.y);
+        this.ctx.lineTo(coord2.x, coord2.y);
+        this.ctx.stroke();
+    }
+
+    draw_dot(dot) {
+        this.ctx.beginPath();
+        this.ctx.arc(dot.coords.x, dot.coords.y, dot.radius, 0 , 2*Math.PI);
+        this.ctx.fillStyle = dot.color;
+        this.ctx.fill();     
+        this.ctx.stroke();
+    }
+}
+
+class Line {
+    constructor(coord1, coord2, color) {
+        this._coord1 = coord1;
+        this._coord2 = coord2;
+        this._color = color;
+    }
+
+    get coord1() {
+        return this._coord1;
+    }
+
+    get coord2() {
+        return this._coord2;
+    }
+
+    get color() {
+        return this._color;
+    }
+}
